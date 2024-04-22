@@ -18,4 +18,30 @@ class News extends Model
     {
         return $this->belongsTo(Categories::class);
     }
+
+    public static function findNews($id){
+        return News::find($id);
+    }
+
+    public static function getLatestNews(){
+        return News::where('Date_expiration', '>', Carbon::now())
+        ->orderBy('Date_debut','desc')
+        ->with('category')
+        ->get();
+    }
+
+    public static function getNewsByCategoryId($categoryId)
+    {
+        $category = Categories::find($categoryId);
+
+        if (!$category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
+
+        $news = News::where('category_id', $category->id)
+                    ->with('category')
+                    ->get();
+
+        return $news;
+    }
 }

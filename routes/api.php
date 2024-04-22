@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
 use App\Http\Controllers\NewsController;
 
 
@@ -21,6 +20,7 @@ use App\Http\Controllers\NewsController;
 Route::prefix('news')->group(function(){
     Route::get('/news', [NewsController::class, 'index']);
     Route::get('/getall', [NewsController::class, 'GetLatestNews']);
+    Route::get('/getwithSub/{id}', [NewsController::class, 'GetNewsWithSubs']);
     Route::get('/getbyid/{id}', [NewsController::class, 'GetNewsById']);
     Route::post('/create', [NewsController::class, 'CreateNew']);
     Route::put('/update/{id}',[NewsController::class, 'UpdateNew']);

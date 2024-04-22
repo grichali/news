@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\News;
+use App\Models\Categories;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -16,16 +17,13 @@ class NewsController extends Controller
     }
 
     public function GetLatestNews(){
-        $news = News::where('Date_expiration', '>', Carbon::now())
-        ->orderBy('Date_debut','desc')
-        ->with('category')
-        ->get();
+        $news = News::getLatestNews();
 
         return response()->json($news, 200);
     }
 
     public function GetNewsById($id){
-        $news = News::find($id);
+        $news = News::findNews(id);
 
         if(!$news)
         {
@@ -42,7 +40,7 @@ class NewsController extends Controller
             'Contenu' => 'required',
             'category_id'=> 'required',
             'Date_debut'=> 'required',
-            'Date_expiration'=> 'required'
+            'Date_expiration'=> 'required|date|after:Date_debut'
         ]);
 
         if ($validator->fails()) {
@@ -95,7 +93,28 @@ class NewsController extends Controller
 
         $new->delete();
 
-        return response()->json(['message' => 'New deleted successfully'], 200);
+        return response()->json(['message' => 'New deleted successfully'], 204);
+    }
+
+
+    private $ListNews = [];
+    public function GetNewsWithSubs($id)
+    {
+        $newsarray = News::getNewsByCategoryId($id)->toArray();
+
+        $this->ListNews = array_merge($this->ListNews, $newsarray);
+
+        $subcategories = Categories::getSubcategories($id)->toArray();
+
+        if (count($subcategories) == 0) {
+            return response()->json($this->ListNews, 200);
+        }
+
+        foreach ($subcategories as $key => $category) {
+            $this->GetNewsWithSubs($category);
+        }
+
+        return response()->json($this->ListNews, 200);
     }
 
 }

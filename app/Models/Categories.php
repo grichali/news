@@ -26,4 +26,21 @@ class Categories extends Model
     {
         return $this->hasMany(Categories::class, 'parent_id');
     }
+
+    public static function getSubcategories($categoryId)
+    {
+        // Find the category
+        $category = Categories::find($categoryId);
+
+        if (!$category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
+
+        // Retrieve the IDs of subcategories
+        $subcategoryIds = Categories::where('parent_id', $category->id)->pluck('id');
+
+        return $subcategoryIds;
+    }
+
+
 }
