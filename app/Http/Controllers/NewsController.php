@@ -6,34 +6,26 @@ use Illuminate\Http\Request;
 use App\Models\News;
 use App\Models\Categories;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
 
 class NewsController extends Controller
 {
     public function index()
     {
-        $news = News::with('category')->get();
-        return response()->json($news);
+        return News::index();
     }
 
-    public function GetLatestNews(){
-        $news = News::getLatestNews();
-
-        return response()->json($news, 200);
+    public function getLatestNews()
+    {
+        return News::getLatestNews();
     }
 
-    public function GetNewsById($id){
-        $news = News::findNews(id);
-
-        if(!$news)
-        {
-            return response()->json(['error' => 'not found'], 404);
-        }
-        return response()->json($news, 200);
+    public function getNewsById($id)
+    {
+        return News::findNews($id);
     }
 
 
-    public function CreateNew(Request $request)
+    public function createNew(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'Titre' => 'required',
@@ -43,25 +35,19 @@ class NewsController extends Controller
             'Date_expiration'=> 'required|date|after:Date_debut'
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        $creatednews = News::create($request->all());
-
-        return response()->json($creatednews, 201);
+        return News::createNew($request);
 
     }
 
 
-    public function UpdateNew(Request $request,$id)
+    public function updateNew(Request $request,$id)
     {
-        $news = News::find($id);
 
-        if(!$news)
-        {
-            return response()->json(['error' => 'News not found'], 404);
-        }
         $validator = Validator::make($request->all(), [
             'Titre' => 'nullable',
             'Contenu' => 'nullable',
@@ -70,51 +56,44 @@ class NewsController extends Controller
             'Date_expiration'=> 'nullable|date',
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        $news->fill($request->all())->save();
-
-        return response()->json($news, 200);
-
+        return News::updateNew($request,$id);
     }
 
 
 
-    public function DeleteNew($id)
+    public function deleteNew($id)
     {
-        $new = News::find($id);
-
-        if(!$new)
-        {
-            return response()->json(['error' => 'there is no New with that id'], 404);
-        }
-
-        $new->delete();
-
-        return response()->json(['message' => 'New deleted successfully'], 204);
+        return News::deleteNew($id);
     }
 
 
     private $ListNews = [];
-    public function GetNewsWithSubs($id)
+    public function searchNews($categoryname)
     {
-        $newsarray = News::getNewsByCategoryId($id)->toArray();
+
+        $newsarray= News::getNewsByCategoryId($categoryname)->toArray();
 
         $this->ListNews = array_merge($this->ListNews, $newsarray);
 
-        $subcategories = Categories::getSubcategories($id)->toArray();
+        $subcategories = Categories::getSubcategories($categoryname)->toArray();
 
-        if (count($subcategories) == 0) {
+        if(count($subcategories) == 0)
+        {
             return response()->json($this->ListNews, 200);
         }
 
+
         foreach ($subcategories as $key => $category) {
-            $this->GetNewsWithSubs($category);
+            $this->searchNews($category);
         }
 
         return response()->json($this->ListNews, 200);
+
     }
 
 }

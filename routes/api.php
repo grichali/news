@@ -14,15 +14,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 use App\Http\Controllers\NewsController;
+use App\Http\Middleware\Authorization;
 
-
-
-Route::prefix('news')->group(function(){
-    Route::get('/news', [NewsController::class, 'index']);
-    Route::get('/getall', [NewsController::class, 'GetLatestNews']);
-    Route::get('/getwithSub/{id}', [NewsController::class, 'GetNewsWithSubs']);
-    Route::get('/getbyid/{id}', [NewsController::class, 'GetNewsById']);
-    Route::post('/create', [NewsController::class, 'CreateNew']);
-    Route::put('/update/{id}',[NewsController::class, 'UpdateNew']);
-    Route::delete('/delete/{id}',[NewsController::class,'DeleteNew']);
+Route::middleware([Authorization::class])->group(function () {
+    Route::prefix('news')->group(function(){
+        Route::get('/news', [NewsController::class, 'index']);
+        Route::get('/getall', [NewsController::class, 'getLatestNews']);
+        Route::get('/getwithSub/{categoryname}', [NewsController::class, 'searchNews']);
+        Route::get('/getbyid/{id}', [NewsController::class, 'getNewsById']);
+        Route::post('/create', [NewsController::class, 'createNew']);
+        Route::put('/update/{id}',[NewsController::class, 'updateNew']);
+        Route::delete('/delete/{id}',[NewsController::class,'deleteNew']);
+    });
 });
+
