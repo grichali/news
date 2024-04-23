@@ -23,7 +23,9 @@ class News extends Model
 
     public static function index()
     {
-        $news = News::with('category')->get();
+        $news = News::with('category')
+        ->orderBy('Date_debut','desc')
+        ->get();
         return response()->json($news);
     }
 
